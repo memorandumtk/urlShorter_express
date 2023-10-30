@@ -3,9 +3,7 @@ const express = require("express");
 const router = express.Router();
 const bodyParser = require('body-parser')
 const Url = require("../models/url.js");
-const { body, validationResult } = require("express-validator");
 const asyncHandler = require("express-async-handler");
-const { default: next } = require("next");
 
 // Regex if URL is valid format
 // Ref https://www.makeuseof.com/regular-expressions-validate-url/
@@ -24,12 +22,18 @@ const urlPost = asyncHandler(async (req, res, next, postedUrl) => {
   );
   console.log(targetUrl)
   // Check target url exists or not
-  if (targetUrl === null) {
+  if (!targetUrl) {
     // find url having max number to add new url
     const maxNumberUrl = await Url.findOne().sort({ number: -1 }).limit(1);
-    // insert new url having newest max number
-    const url = new Url({ number: maxNumberUrl.number + 1, urlName: postedUrl });
-    await url.save();
+    // If an attemp is first time, define number as 1
+    if (!maxNumberUrl) {
+      const url = new Url({ number: 1, urlName: postedUrl });
+      await url.save();
+    } else {
+      // insert new url having newest max number
+      const url = new Url({ number: maxNumberUrl.number + 1, urlName: postedUrl });
+      await url.save();
+    }
     const insetedUrl = await Url.findOne({ urlName: postedUrl }).exec();
     res.json({ "original_url": insetedUrl.urlName, "short_url": insetedUrl.number });
   } else {
@@ -62,9 +66,9 @@ const urlGet = asyncHandler(async (req, res, next) => {
 });
 
 // Function to jump url that is entered by get method
-const jumpUrl = asyncHandler(async(req, res, next) => {
+const jumpUrl = asyncHandler(async (req, res, next) => {
   const requestNumber = req.params.number;
-  const targetNumber = await(
+  const targetNumber = await (
     Url.findOne({ number: requestNumber }).exec()
   );
   console.log(targetNumber)

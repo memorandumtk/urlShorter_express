@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const UrlSchema = new Schema({
-  number: { type: Number, required: true },
+  number: { type: Number, required: true, min: 1 },
   urlName: { type: String, required: true }
 });
 
