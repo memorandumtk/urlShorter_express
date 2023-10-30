@@ -3,6 +3,7 @@ const express = require('express');
 // Basic Configuration
 const port = process.env.PORT || 3000;
 const app = express();
+const cors = require("cors");
 
 // Set up mongoose connection
 const mongoose = require("mongoose");
@@ -13,6 +14,7 @@ async function main() {
   await mongoose.connect(mongoDB);
 }
 
+app.use(cors());
 app.use('/public', express.static(`${process.cwd()}/public`));
 app.get('/', function(req, res) {
   res.sendFile(process.cwd() + '/views/index.html');
